@@ -11,11 +11,11 @@ module.exports.objectsGetAll = function(req, res) {
   var maxCount = 50;
 
   if (req.query && req.query.offset) {
-    offset = parseInt(req.query.offset, 10);
+      offset = parseInt(req.query.offset, 10)
   }
 
   if (req.query && req.query.count) {
-    count = parseInt(req.query.count, 10);
+      count = parseInt(req.query.count, 10);
   }
 
   if (isNaN(offset) || isNaN(count)) {
@@ -57,10 +57,86 @@ module.exports.objectsGetAll = function(req, res) {
 
 };
 
-module.exports.objectsGetOne = function(req, res) {
-  var id = req.params.hotelId;
+//This is the spec from dos-schema
+module.exports.objectsListAll = function(req, res) {
 
-  console.log('GET hotelId', id);
+    console.log("POST to GET a list of objects");
+    console.log(req.body)
+
+    var offset = 0;
+    var count = 5;
+    var maxCount = 50;
+
+    var alias = "";
+    var url = "";
+    var checkSum = "";
+
+    if (req.body && req.body.page_token) {
+        offset = parseInt(req.body.page_token, 10);
+    }
+
+    console.log(offset);
+
+    if (req.body && req.body.page_size) {
+        count = req.body.page_size;
+    }
+
+    if (req.body && req.body.alias) {
+        alias = req.body.alias;
+    }
+
+    if (req.body && req.body.url) {
+        url = req.body.url;
+    }
+
+    if (req.body && req.body.checkSum) {
+        checkSum = req.body.checkSum;
+    }
+
+    if (isNaN(offset) || isNaN(count)) {
+        res
+            .status(400)
+            .json({
+                "message" : "If supplied in body, page_token and page_size must both be numbers"
+            });
+        return;
+    }
+
+    if (count > maxCount) {
+        res
+            .status(400)
+            .json({
+                "message" : "Count limit of " + maxCount + " exceeded"
+            });
+        return;
+    }
+
+    Objects
+        .find()
+        .skip(offset)
+        .limit(count)
+        .exec(function(err, objects) {
+            console.log(err);
+            console.log(objects);
+            if (err) {
+                console.log("Error finding objects");
+                res
+                    .status(500)
+                    .json(err);
+            } else {
+                console.log("Found objects", objects.length);
+                var next_page_token = objects.length < count ? null : (count-1+offset).toString();
+                res
+                    .json({data_objects: objects, next_page_token: next_page_token});
+            }
+        });
+
+};
+
+module.exports.objectsGetOne = function(req, res) {
+  var id = req.params.objectId;
+
+  console.log('GET objectId', id);
 
   Objects
     .findById(id)
@@ -70,14 +146,14 @@ module.exports.objectsGetOne = function(req, res) {
         message : doc
       };
       if (err) {
-        console.log("Error finding hotel");
+        console.log("Error finding object");
         response.status = 500;
         response.message = err;
       } else if(!doc) {
-        console.log("HotelId not found in database", id);
+        console.log("objectId not found in database", id);
         response.status = 404;
         response.message = {
-          "message" : "Hotel ID not found " + id
+          "message" : "object ID not found " + id
         };
       }
       res
@@ -98,31 +174,22 @@ var _splitArray = function(input) {
 };
 
 module.exports.objectsAddOne = function(req, res) {
-  console.log("POST new hotel");
+  console.log("POST new object");
 
   Objects
     .create({
-      name : req.body.name,
-      description : req.body.description,
-      stars : parseInt(req.body.stars,10),
-      services : _splitArray(req.body.services),
-      photos : _splitArray(req.body.photos),
-      currency : req.body.currency,
-      location : {
-        address : req.body.address,
-        coordinates : [parseFloat(req.body.lng), parseFloat(req.body.lat)]
-      }
-    }, function(err, hotel) {
+        //TODO: form the object
+    }, function(err, object) {
       if (err) {
-        console.log("Error creating hotel");
+        console.log("Error creating object");
         res
           .status(400)
           .json(err);
       } else {
-        console.log("Hotel created!", hotel);
+        console.log("object created!", object);
         res
           .status(201)
-          .json(hotel);
+          .json(object);
       }
     });
 
@@ -130,43 +197,34 @@ module.exports.objectsAddOne = function(req, res) {
 
 
 module.exports.objectsUpdateOne = function(req, res) {
-  var hotelId = req.params.hotelId;
+  var objectId = req.params.objectId;
 
-  console.log('GET hotelId', hotelId);
+  console.log('GET objectId', objectId);
 
   Objects
-    .findById(hotelId)
-    .select('-reviews -rooms')
-    .exec(function(err, hotel) {
+    .findById(objectId)
+    .select('-checksums -urls')
+    .exec(function(err, object) {
       if (err) {
-        console.log("Error finding hotel");
+        console.log("Error finding object");
         res
           .status(500)
           .json(err);
           return;
-      } else if(!hotel) {
-        console.log("HotelId not found in database", hotelId);
+      } else if(!object) {
+        console.log("objectId not found in database", objectId);
         res
           .status(404)
           .lson({
-            "message" : "Hotel ID not found " + hotelId
+            "message" : "object ID not found " + objectId
           });
           return;
       }
 
-      hotel.name = req.body.name;
-      hotel.description = req.body.description;
-      hotel.stars = parseInt(req.body.stars,10);
-      hotel.services = _splitArray(req.body.services);
-      hotel.photos = _splitArray(req.body.photos);
-      hotel.currency = req.body.currency;
-      hotel.location = {
-        address : req.body.address,
-        coordinates : [parseFloat(req.body.lng), parseFloat(req.body.lat)]
-      };
+      //TODO: form the object
 
-      hotel
-        .save(function(err, hotelUpdated) {
+      object
+        .save(function(err, objectUpdated) {
           if(err) {
             res
               .status(500)
@@ -185,17 +243,17 @@ module.exports.objectsUpdateOne = function(req, res) {
 
 
 module.exports.objectsDeleteOne = function(req, res) {
-  var hotelId = req.params.hotelId;
+  var objectId = req.params.objectId;
 
   Objects
-    .findByIdAndRemove(hotelId)
+    .findByIdAndRemove(objectId)
     .exec(function(err, location) {
       if (err) {
         res
           .status(404)
           .json(err);
       } else {
-        console.log("Hotel deleted, id:", hotelId);
+        console.log("object deleted, id:", objectId);
         res
           .status(204)
           .json();        

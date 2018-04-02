@@ -3,17 +3,21 @@ var router = express.Router();
 
 var ctrlObjects = require('../controllers/objects.controllers.js');
 
-// Hotel routes
+// objects routes
 router
   .route('/objects')
   .get(ctrlObjects.objectsGetAll)
   .post(ctrlObjects.objectsAddOne);
 
 router
-  .route('/objects/:objectId')
-  .get(ctrlObjects.objectsGetOne)
-  .put(ctrlObjects.objectsUpdateOne)
-  .delete(ctrlObjects.objectsDeleteOne);
+    .route('/dataobjects/list')
+    .post(ctrlObjects.objectsListAll);
+
+router
+    .route('/objects/:objectId')
+    .get(ctrlObjects.objectsGetOne)
+    .put(ctrlObjects.objectsUpdateOne)
+    .delete(ctrlObjects.objectsDeleteOne);
 
 
 module.exports = router;

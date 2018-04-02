@@ -21,9 +21,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Enable parsing of posted forms
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json())
 
 // Add some routing
-app.use('/api', routes);
+app.use('/ga4gh/dos/v1', routes);
 
 // Listen for requests
 // var server = app.listen(app.get('port'), function() {
