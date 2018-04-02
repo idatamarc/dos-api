@@ -1,0 +1,73 @@
+{
+  "name": "dos-data-server",
+  "description": "a demo data server for ga4gh dos schema",
+  "version": "1.0.0",
+  "homepage": "",
+  "main": "src",
+  "keywords": [
+    "mongo",
+    "dos",
+    "ga4gh"
+  ],
+  "author": {
+    "name": "Marc Huang",
+    "email": "imarchuang622@gmail.com"
+  },
+  "contributors": [],
+  "bugs": {},
+  "directories": {
+    "lib": "src",
+    "test": "test/"
+  },
+  "engines": {
+    "node": "^8.6.0",
+    "npm": "^5.3.0",
+    "yarn": ">= 0.18.0"
+  },
+  "scripts": {
+    "test": "yarn run lint && yarn run jest",
+    "lint": "eslint src/. test/. --config .eslintrc.json",
+    "start": "node src/",
+    "jest": "jest src --forceExit",
+    "postinstall": "yarn cache clean"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/idatamarc/dos-api.git"
+  },
+  "dependencies": {
+    "body-parser": "^1.14.2",
+    "express": "^4.13.3",
+    "mongodb": "^2.1.7",
+    "mongoose": "^5.0.12",
+    "winston": "^2.4.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.16.0",
+    "jest": "^22.1.4",
+    "standard-version": "^4.3.0",
+    "superagent": "^3.8.2",
+    "supertest": "^3.0.0",
+    "mocha": "^2.3.3"
+  },
+  "jest": {
+    "bail": false,
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/**/*.js"
+    ],
+    "coverageReporters": [
+      "json",
+      "lcov",
+      "text-summary"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      }
+    }
+  }
+}
