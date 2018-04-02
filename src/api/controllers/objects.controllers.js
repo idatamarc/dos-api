@@ -67,9 +67,11 @@ module.exports.objectsListAll = function(req, res) {
     var count = 5;
     var maxCount = 50;
 
-    var alias = "";
-    var url = "";
-    var checkSum = "";
+    var alias = null;
+    var url = null;
+    var checkSum = null;
+
+    var query = {};
 
     if (req.body && req.body.page_token) {
         offset = parseInt(req.body.page_token, 10);
@@ -84,13 +86,23 @@ module.exports.objectsListAll = function(req, res) {
     if (req.body && req.body.alias) {
         alias = req.body.alias;
     }
+    console.log(alias);
+    if(alias){
+        query["aliases"] = alias;
+    }
 
     if (req.body && req.body.url) {
         url = req.body.url;
     }
+    if(url){
+        query.urls = {url: url};
+    }
 
     if (req.body && req.body.checkSum) {
         checkSum = req.body.checkSum;
+    }
+    if(checkSum){
+        query.checkSums = {checkSum: checkSum};
     }
 
     if (isNaN(offset) || isNaN(count)) {
@@ -111,8 +123,10 @@ module.exports.objectsListAll = function(req, res) {
         return;
     }
 
+    query = Object.keys(query).length === 0 ? null : query;
+
     Objects
-        .find()
+        .find(query)
         .skip(offset)
         .limit(count)
         .exec(function(err, objects) {
